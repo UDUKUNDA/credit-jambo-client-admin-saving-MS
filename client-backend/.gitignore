@@ -1,0 +1,53 @@
+# Dear Master UDUKUNDA: Keep local-only files out of GitHub (Backend)
+# Node and package manager caches
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs and caches
+dist/
+build/
+coverage/
+.eslintcache
+*.tsbuildinfo
+
+# Runtime logs and temp storage
+logs/
+*.log
+tmp/
+temp/
+pid/
+*.pid
+*.pid.lock
+
+# Uploads and local storage (runtime artifacts)
+uploads/
+storage/
+
+# Environment files (keep .env.example tracked)
+.env
+.env.local
+.env.*.local
+.env.test
+
+# Optional local databases (if used for dev)
+*.sqlite
+*.sqlite3
+*.db
+
+# Test tooling outputs
+.nyc_output/
+
+# Editor/OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*.orig
+
+# Misc caches
+node_modules/.cache/
