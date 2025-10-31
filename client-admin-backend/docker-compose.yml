@@ -3,9 +3,9 @@ services:
     image: postgres:15
     container_name: jambo-shared-db
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-jambo_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-jambo123}
-      POSTGRES_DB: ${POSTGRES_DB:-savings_management}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432" # Expose to host so admin-backend (local) can connect
     networks:
