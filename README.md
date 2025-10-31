@@ -80,7 +80,11 @@ docker compose up -d
 
 2) Install backend deps and run dev server
 ```bash
+<<<<<<< HEAD
 cd ./credit-jambo-client-admin-saving-MS/client-admin-backend
+=======
+cd d:\new-credit-jambo\credit-jambo-client-admin-saving-MS\client-admin-backend
+>>>>>>> 68c3c78d994b5c4eafe83038466c0c03a23251e2
 npm install
 npm run dev
 ```
@@ -92,7 +96,11 @@ npm run dev
 
 3) Install client-admin-web deps and run dev server
 ```bash
+<<<<<<< HEAD
 cd ./credit-jambo-client-admin-saving-MS/client-admin-web
+=======
+cd d:\new-credit-jambo\credit-jambo-client-admin-saving-MS\client-admin-web
+>>>>>>> 68c3c78d994b5c4eafe83038466c0c03a23251e2
 npm install
 npm run dev
 ```
@@ -196,13 +204,21 @@ Invoke-RestMethod -Uri "http://localhost:3001/api/admin/users" -Headers @{ Autho
 
 - Backend:
 ```bash
+<<<<<<< HEAD
 cd ./credit-jambo-client-admin-saving-MS/client-admin-backend
+=======
+cd d:\new-credit-jambo\credit-jambo-client-admin-saving-MS\client-admin-backend
+>>>>>>> 68c3c78d994b5c4eafe83038466c0c03a23251e2
 npm run lint
 ```
 
 - Frontend:
 ```bash
+<<<<<<< HEAD
 cd ./credit-jambo-client-admin-saving-MS/client-admin-web
+=======
+cd d:\new-credit-jambo\credit-jambo-client-admin-saving-MS\client-admin-web
+>>>>>>> 68c3c78d994b5c4eafe83038466c0c03a23251e2
 npm run lint
 ```
 
