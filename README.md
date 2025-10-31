@@ -1,6 +1,6 @@
 # Credit Jambo Client Application
 
-A consolidated savings management system where both client and admin functionality run inside the same backend (`client-backend`) and UI (`client-web`), sharing one PostgreSQL database. This simplifies setup, debugging, and deployment.
+A consolidated savings management system where both client and admin functionality run inside the same backend (`client-admin-backend`) and UI (`client-admin-web`), sharing one PostgreSQL database. This simplifies setup, debugging, and deployment.
 
 ## Overview
 
@@ -14,8 +14,8 @@ A consolidated savings management system where both client and admin functionali
 
 ## Monorepo Structure
 
-- `client-backend/` — Express + Sequelize API running on port `3001`
-- `client-web/` — Vite + React app running on port `5173` (proxy to `/api`)
+- `client-admin-backend/` — Express + Sequelize API running on port `3001`
+- `client-admin-web/` — Vite + React app running on port `5173` (proxy to `/api`)
 - Shared DB exposed via Docker on port `5432` (container `jambo-shared-db`)
 
 ## Prerequisites
@@ -81,7 +81,7 @@ docker compose up -d
 
 2) Install backend deps and run dev server
 ```bash
-cd d:\new-credit-jambo\credit-jambo-client-saving-MS\client-backend
+cd d:\new-credit-jambo\credit-jambo-client-admin-saving-MS\client-admin-backend
 npm install
 npm run dev
 ```
@@ -91,9 +91,9 @@ npm run dev
   - Seeds an admin user and a verified admin device (`ADMIN_DEVICE_ID`)
   - Logs “Savings Management Backend running on port 3001”
 
-3) Install client-web deps and run dev server
+3) Install client-admin-web deps and run dev server
 ```bash
-cd d:\new-credit-jambo\credit-jambo-client-saving-MS\client-web
+cd d:\new-credit-jambo\credit-jambo-client-admin-saving-MS\client-admin-web
 npm install
 npm run dev
 ```
@@ -208,13 +208,13 @@ Invoke-RestMethod -Uri "http://localhost:3001/api/admin/users" -Headers @{ Autho
 
 - Backend:
 ```bash
-cd d:\new-credit-jambo\credit-jambo-client-saving-MS\client-backend
+cd d:\new-credit-jambo\credit-jambo-client-admin-saving-MS\client-admin-backend
 npm run lint
 ```
 
 - Frontend:
 ```bash
-cd d:\new-credit-jambo\credit-jambo-client-saving-MS\client-web
+cd d:\new-credit-jambo\credit-jambo-client-admin-saving-MS\client-admin-web
 npm run lint
 ```
 
