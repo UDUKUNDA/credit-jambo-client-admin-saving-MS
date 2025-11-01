@@ -1,14 +1,14 @@
-// client-app/backend/src/controllers/AuthController.ts
 import { Request, Response } from 'express';
 import { AuthService } from '../services/client/AuthService';
 import { UserDTO, DeviceDTO } from '../dtos';
 import User from '../db/models/User';
 import Device from '../db/models/Device';
+import { ok, badRequest, unauthorized, serverError } from '../utils/responses';
 
 export class AuthController {
   private authService = new AuthService();
 
-  // Handles user registration; preserves `this` via arrow function.
+   
   register = async (req: Request, res: Response) => {
     try {
       const { user, device } = await this.authService.register({
@@ -17,69 +17,105 @@ export class AuthController {
         ipAddress: req.ip || req.connection.remoteAddress || ''
       });
 
-      res.status(201).json({
+      return ok(res, {
         message: 'Registration successful. Please wait for device verification.',
         user: new UserDTO(user),
         device: new DeviceDTO(device)
-      });
+      }, 201);
     } catch (error: any) {
-      res.status(400).json({ error: error.message });
+      return badRequest(res, error.message);
     }
-  }
+  };
 
-  // Handles login; preserves `this` via arrow function.
+ 
   login = async (req: Request, res: Response) => {
     try {
-      const { token, user, device } = await this.authService.login({
-        ...req.body,
-        userAgent: req.get('User-Agent') || '',
-        ipAddress: req.ip || req.connection.remoteAddress || ''
-      });
+    const { email, password } = req.body;
+    console.log(`[AUTH DEBUG] Login attempt - Email: ${email}`);
 
-      // Respond with normalized DTOs
-      const response: any = {
-        token,
-        user: new UserDTO(user),
-      };
-
-      // Include device only if present (admins may not have one)
-      if (device) {
-        response.device = new DeviceDTO(device);
-      }
-
-      res.json(response);
-    } catch (error: any) {
-      res.status(401).json({ error: error.message });
+    if (!email || !password) {
+      return badRequest(res, 'Email and password are required.');
     }
-  }
 
-  // Verifies JWT token; preserves `this` via arrow function.
-  // Verifies JWT token; loads full User and Device by IDs, returns DTOs.
+    // Lookup user to provide clearer debug logs; device checks removed as login should not gate on device.
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      console.log(`[AUTH DEBUG] User not found: ${email}`);
+      return unauthorized(res, 'Invalid credentials');
+    }
+    console.log(`[AUTH DEBUG] User found - Role: ${user.role}, ID: ${user.id}`);
+
+    const result = await this.authService.login({
+      email,
+      password,
+    });
+
+    return ok(res, {
+      token: result.token,
+      user: new UserDTO(result.user),
+    });
+  } catch (error: any) {
+    // 401 covers invalid creds and device policy violations
+    return unauthorized(res, error.message);
+  }
+  };
+
+ 
   verifyToken = async (req: Request, res: Response) => {
     try {
       const token = req.header('Authorization')?.replace('Bearer ', '');
       if (!token) {
-        return res.status(401).json({ error: 'No token provided' });
+        return unauthorized(res, 'No token provided');
       }
 
-      // Decode JWT to get IDs; AuthService returns { userId, deviceId }
       const { userId, deviceId } = await this.authService.verifyToken(token);
 
-      // Load User and Device models using primary keys
       const user = await User.findByPk(userId);
-      const device = await Device.findByPk(deviceId);
-
-      if (!user || !device) {
-        return res.status(401).json({ error: 'Invalid token entities' });
+      if (!user) {
+        return unauthorized(res, 'Invalid token entities');
       }
 
-      // Respond with normalized DTOs
-      res.json({
-        user: new UserDTO(user),
-        device: new DeviceDTO(device)
-      });
+      let deviceDto: DeviceDTO | undefined;
+      if (deviceId) {
+        const device = await Device.findOne({ where: { deviceId } }); // Use deviceId column
+        if (device) {
+          deviceDto = new DeviceDTO(device);
+        }
+      } else {
+        // New policy: include any verified device for the user if available
+        const verified = await Device.findOne({ where: { userId, isVerified: true } });
+        if (verified) {
+          deviceDto = new DeviceDTO(verified);
+        }
+      }
+
+      const response: any = { user: new UserDTO(user) };
+      if (deviceDto) response.device = deviceDto;
+
+      return ok(res, response);
     } catch (error: any) {
-      res.status(401).json({ error: error.message });
+      return unauthorized(res, error.message);
     }
-  }
+  };
+
+  /**
+   * requestPasswordReset
+   * POST /api/auth/request-password-reset
+   * Body: { email }
+   * - Initiates a password reset by generating a temporary password.
+   * - Returns a generic message and, in non-production, the temp password for demo/testing.
+   */
+  requestPasswordReset = async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body || {};
+      if (!email) {
+        return badRequest(res, 'Email is required.');
+      }
+
+      const result = await this.authService.requestPasswordReset(email);
+      return ok(res, result);
+    } catch (error: any) {
+      return serverError(res, error);
+    }
+  };
 }

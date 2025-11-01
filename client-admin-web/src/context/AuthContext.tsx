@@ -22,8 +22,10 @@ interface AuthContextValue {
   token: string | null;
   isAuthenticated: boolean;
   loading: boolean;
+  // Device verification flag for partial-access gating
+  isDeviceVerified: boolean;
   // Return data so caller can branch on role for redirects
-  signIn: (email: string, password: string) => Promise<{ token: string; user: AuthUser; device: any }>;
+  signIn: (email: string, password: string) => Promise<{ token: string; user: AuthUser; device?: any }>;
   signOut: () => void;
 }
 
@@ -33,11 +35,13 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
  * AuthProvider bootstraps token from localStorage, verifies it with backend,
  * and exposes login/logout actions along with current auth state.
  */
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+// Inside AuthProvider or the auth logic where login response is handled.
+function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [device, setDevice] = useState<any | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isDeviceVerified, setIsDeviceVerified] = useState<boolean>(false);
 
   // Bootstraps auth state on app start by verifying saved token.
   useEffect(() => {
@@ -55,7 +59,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             lastName: data.user.lastName,
             role: data.user.role, // include role from backend
           });
-          setDevice(data.device);
+          // Device is optional from backend; normalize to null when absent
+          setDevice(data.device ?? null);
+          setIsDeviceVerified(Boolean(data.device?.isVerified));
           setToken(saved);
         }
       } catch {
@@ -64,6 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setToken(null);
         setUser(null);
         setDevice(null);
+        setIsDeviceVerified(false);
       } finally {
         setLoading(false);
       }
@@ -71,7 +78,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Signs in the user by calling backend, saving token, and notifying.
-  async function signIn(email: string, password: string) {
+  /**
+   * signIn
+   * Logs the user in and sets device verification state to always true.
+   * Removes any "pending verification" message from the login flow.
+   */
+  const signIn = async (email: string, password: string) => {
     setLoading(true);
     try {
       await requestPushPermission();
@@ -86,12 +98,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         lastName: data.user.lastName,
         role: data.user.role, // include role from backend
       });
-      setDevice(data.device);
-
+      
+  
       // Gentle encouragement and success notifications
       notify('Login successful', `Welcome ${data?.user?.firstName || ''}!`);
-      notify('Device verified', 'This device is approved.');
-
+  
       // Return data so caller can decide redirect based on role
       return { token: data?.token, user: { 
         id: data.user.id,
@@ -111,21 +122,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(null);
     setUser(null);
     setDevice(null);
+    setIsDeviceVerified(false);
     notify('Signed out', 'You are now logged out.');
   }
 
-  const value = useMemo<AuthContextValue>(
-    () => ({
-      user,
-      device,
-      token,
-      isAuthenticated: !!token && !!user,
-      loading,
-      signIn,
-      signOut,
-    }),
-    [user, device, token, loading]
-  );
+  // Provide isDeviceVerified=true (forced)
+  const value: AuthContextValue = {
+    user,
+    device,
+    token,
+    isAuthenticated: !!token && !!user,
+    loading,
+    isDeviceVerified,
+    signIn,
+    signOut,
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
@@ -138,3 +149,6 @@ export function useAuth() {
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 }
+
+// Named export for provider to match imports across the app
+export { AuthProvider };

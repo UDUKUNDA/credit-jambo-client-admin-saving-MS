@@ -1,4 +1,3 @@
-// client-app/backend/src/models/Device.ts
 import { DataTypes, Model, Optional } from 'sequelize';
 import sequelize from '../config';
 import User from './User';

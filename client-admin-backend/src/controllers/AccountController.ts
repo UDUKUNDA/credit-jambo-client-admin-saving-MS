@@ -1,7 +1,7 @@
-// client-app/backend/src/controllers/AccountController.ts
 import { Request, Response } from 'express';
 import { AccountService } from '../services/client/AccountService';
 import { AccountDTO, TransactionDTO } from '../dtos';
+import { ok, serverError, badRequest } from '../utils/responses';
 
 export class AccountController {
   private accountService = new AccountService();
@@ -10,9 +10,9 @@ export class AccountController {
     try {
       const userId = (req as any).user.userId;
       const account = await this.accountService.getAccount(userId);
-      res.json(new AccountDTO(account));
+      return ok(res, new AccountDTO(account));
     } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      return serverError(res, error);
     }
   }
 
@@ -22,9 +22,9 @@ export class AccountController {
       const { amount, description } = req.body;
 
       const transaction = await this.accountService.deposit(userId, amount, description);
-      res.json(new TransactionDTO(transaction));
+      return ok(res, new TransactionDTO(transaction));
     } catch (error: any) {
-      res.status(400).json({ error: error.message });
+      return badRequest(res, error.message);
     }
   }
 
@@ -34,9 +34,9 @@ export class AccountController {
       const { amount, description } = req.body;
 
       const transaction = await this.accountService.withdraw(userId, amount, description);
-      res.json(new TransactionDTO(transaction));
+      return ok(res, new TransactionDTO(transaction));
     } catch (error: any) {
-      res.status(400).json({ error: error.message });
+      return badRequest(res, error.message);
     }
   }
 
@@ -51,12 +51,12 @@ export class AccountController {
         parseInt(offset as string)
       );
 
-      res.json({
+      return ok(res, {
         transactions: result.transactions.map(t => new TransactionDTO(t)),
         total: result.total
       });
     } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      return serverError(res, error);
     }
   }
 }

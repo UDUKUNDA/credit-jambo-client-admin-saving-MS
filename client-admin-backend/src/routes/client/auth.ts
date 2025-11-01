@@ -1,4 +1,3 @@
-// backend/src/routes/client/auth.ts
 import { Router } from 'express';
 import { AuthController } from '../../controllers/AuthController';
 import { validateRegister, validateLogin } from '../../middlewares/validation';
@@ -11,9 +10,12 @@ const authController = new AuthController();
 router.post('/register', validateRegister, authController.register.bind(authController));
 
 // Login route  
-router.post('/login', validateLogin, authController.login.bind(authController));
+router.post('/login',  authController.login.bind(authController));
 
 // Token verification route
 router.get('/verify-token', authController.verifyToken.bind(authController));
+
+// Password reset request
+router.post('/request-password-reset', authController.requestPasswordReset.bind(authController));
 
 export default router;

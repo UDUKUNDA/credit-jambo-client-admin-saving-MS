@@ -12,14 +12,20 @@ export const api = axios.create({
 });
 
 /**
- * Generate a unique device ID for this browser session.
- * Uses localStorage to persist the same deviceId across page reloads.
+ * getDeviceId
+ * Generates or retrieves a stable device identifier for this browser.
+ * Stored in localStorage so registration can associate this device with the user.
  */
-function getDeviceId(): string {
+/**
+ * getDeviceId
+ * Returns a stable device identifier for this browser/session.
+ * If none exists, it creates one and stores it in localStorage.
+ */
+export function getDeviceId(): string {
   let deviceId = localStorage.getItem('deviceId');
   if (!deviceId) {
-    // Generate a simple unique ID: timestamp + random string
-    deviceId = `web_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Create a simple deterministic id: prefix + timestamp + random chunk
+    deviceId = `web_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
     localStorage.setItem('deviceId', deviceId);
   }
   return deviceId;
@@ -33,8 +39,8 @@ export async function login(email: string, password: string) {
   // Calls /api/auth/login via Vite proxy in dev
   const res = await api.post('/api/auth/login', { 
     email, 
-    password, 
-    deviceId: getDeviceId() 
+    password,
+    
   });
   return res.data;
 }
@@ -48,8 +54,7 @@ export async function register(email: string, password: string, firstName: strin
     email, 
     password, 
     firstName, 
-    lastName, 
-    deviceId: getDeviceId() 
+    lastName,
   };
   
   console.log('Sending registration payload:', payload);
@@ -118,7 +123,107 @@ export async function verifyToken() {
   return res.data;
 }
 
+/**
+ * Request password reset by email.
+ * POST /api/auth/request-password-reset
+ * Returns a generic message. In non-production, may include a tempPassword for demo.
+ */
+export async function requestPasswordReset(email: string): Promise<{ message: string; tempPassword?: string }> {
+  const res = await api.post('/api/auth/request-password-reset', { email });
+  return res.data;
+}
+
 export async function getAdminUsers(limit = 50, offset = 0) {
   const res = await api.get('/api/admin/users', { params: { limit, offset } });
+  return res.data;
+}
+
+/**
+ * Admin: Fetch detailed user info including account, devices, transactions.
+ */
+export async function getAdminUserDetails(userId: string) {
+  const res = await api.get(`/api/admin/users/${userId}/details`);
+  return res.data;
+}
+
+/**
+ * Admin: Fetch devices (optional filter by userId).
+ */
+export async function getAdminDevices(userId?: string) {
+  const res = await api.get('/api/admin/devices', { params: userId ? { userId } : {} });
+  return res.data;
+}
+
+/**
+ * Admin: Verify a device by its deviceId.
+ */
+export async function verifyAdminDevice(deviceId: string) {
+  const res = await api.post(`/api/admin/devices/${encodeURIComponent(deviceId)}/verify`);
+  return res.data;
+}
+
+/**
+ * Admin: Delete a device by deviceId.
+ */
+export async function deleteAdminDevice(deviceId: string) {
+  const res = await api.delete(`/api/admin/devices/${encodeURIComponent(deviceId)}`);
+  return res.data;
+}
+
+/**
+ * Admin: Fetch global stats for dashboard.
+ */
+export async function getAdminStats() {
+  const res = await api.get('/api/admin/stats');
+  return res.data;
+}
+
+/**
+ * Admin: Fetch all accounts (with user email).
+ */
+export async function getAdminAccounts() {
+  const res = await api.get('/api/admin/accounts');
+  return res.data;
+}
+
+/**
+ * Admin: Fetch transactions with optional filters.
+ */
+export async function getAdminTransactions(filters?: { type?: string; status?: string; userId?: string }) {
+  const res = await api.get('/api/admin/transactions', { params: filters || {} });
+  return res.data;
+}
+
+/**
+ * Admin: Toggle user access (deny/restore) by setting isActive.
+ * PATCH /api/admin/users/:id/access
+ */
+export async function setAdminUserAccess(userId: string, isActive: boolean) {
+  const res = await api.patch(`/api/admin/users/${encodeURIComponent(userId)}/access`, { isActive });
+  return res.data;
+}
+
+/** Convenience wrappers */
+export async function denyAdminUserAccess(userId: string) {
+  return setAdminUserAccess(userId, false);
+}
+
+export async function restoreAdminUserAccess(userId: string) {
+  return setAdminUserAccess(userId, true);
+}
+
+/**
+ * Admin: Assign a new device to a user. If deviceId is omitted, backend generates.
+ */
+export async function assignAdminDevice(userId: string, deviceId?: string, isVerified?: boolean) {
+  const res = await api.post(`/api/admin/users/${encodeURIComponent(userId)}/devices`, { deviceId, isVerified });
+  return res.data;
+}
+
+/**
+ * Admin: Delete a user and related data.
+ */
+export async function deleteAdminUser(userId: string) {
+  const res = await api.delete(`/api/admin/users/${encodeURIComponent(userId)}`);
   return res.data;
 }

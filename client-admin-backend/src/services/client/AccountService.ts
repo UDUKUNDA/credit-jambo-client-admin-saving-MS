@@ -1,5 +1,3 @@
-// client-app/backend/src/services/AccountService.ts
-import { Op } from 'sequelize';
 import Account from '../../db/models/Account';
 import Transaction from '../../db/models/Transaction';
 import User from '../../db/models/User';

@@ -19,9 +19,9 @@ function hashPassword(password: string): string {
  * Uses ADMIN_EMAIL, ADMIN_PASSWORD, and ADMIN_DEVICE_ID from environment variables.
  */
 export async function seedAdminUser(): Promise<void> {
-  const email = process.env.ADMIN_EMAIL || 'admin@savings.com';
-  const password = process.env.ADMIN_PASSWORD || 'admin123';
-  const adminDeviceId = process.env.ADMIN_DEVICE_ID || 'ADMIN-PC';
+  const email = process.env.ADMIN_EMAIL as string;
+  const password = process.env.ADMIN_PASSWORD as string;
+  const adminDeviceId = process.env.ADMIN_DEVICE_ID as string;
 
   // Try to find the existing admin user
   const existing = await User.findOne({ where: { email, role: 'admin' } });

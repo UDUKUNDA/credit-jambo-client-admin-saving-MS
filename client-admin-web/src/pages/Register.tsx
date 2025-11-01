@@ -6,6 +6,8 @@ import { notify, requestPushPermission } from '../lib/notify';
 export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  // Controls whether the password is visible in the input for user convenience
+  const [showPassword, setShowPassword] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [msg, setMsg] = useState<string | null>(null);
@@ -21,7 +23,7 @@ export default function Register() {
       await requestPushPermission();
       const data = await register(email, password, firstName, lastName);
       setMsg(`Registered! User: ${data?.user?.email || email}`);
-      notify('Registration successful', 'Please login. Device pending verification.');
+      notify('Registration successful', 'Please login.');
       // Redirect to login after a short friendly pause
       setTimeout(() => navigate('/login'), 1500);
     } catch (err: any) {
@@ -75,13 +77,24 @@ export default function Register() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required />
-        <input
-          className="w-full border p-2 rounded"
-          placeholder="Password (min 6 characters)"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required />
+        <div>
+          <input
+            className="w-full border p-2 rounded"
+            placeholder="Password (min 6 characters)"
+            // Toggle between "password" and "text" to allow viewing the password
+            type={showPassword ? 'text' : 'password'}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required />
+          <label className="mt-1 flex items-center gap-2 text-xs text-gray-600">
+            <input
+              type="checkbox"
+              checked={showPassword}
+              onChange={(e) => setShowPassword(e.target.checked)}
+            />
+            Show password
+          </label>
+        </div>
         <button
           className="w-full bg-brand-600 text-white p-2 rounded hover:bg-brand-500 transition disabled:opacity-60"
           disabled={isLoading}

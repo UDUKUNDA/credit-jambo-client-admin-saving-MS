@@ -27,8 +27,6 @@ export class DeviceDTO {
   id: string;
   deviceId: string;
   isVerified: boolean;
-  userAgent: string;
-  ipAddress: string;
   lastLogin?: Date;
   createdAt?: Date;
 
@@ -36,8 +34,6 @@ export class DeviceDTO {
     this.id = String((device as any).id);
     this.deviceId = (device as any).deviceId;
     this.isVerified = Boolean((device as any).isVerified);
-    this.userAgent = (device as any).userAgent;
-    this.ipAddress = (device as any).ipAddress;
     this.lastLogin = (device as any).lastLogin;
     this.createdAt = (device as any).createdAt;
   }

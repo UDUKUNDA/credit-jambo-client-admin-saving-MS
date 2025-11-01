@@ -1,225 +1,154 @@
-# Credit Jambo Client Admin Saving MS
+# Credit Jambo — Client + Admin Savings MS
 
-A consolidated savings management system where both client and admin functionality run inside the same backend (`client-admin-backend`) and UI (`client-admin-web`), sharing one PostgreSQL database. This simplifies setup, debugging, and deployment.
+## About this project
+- Single codebase with both client and admin features.
+- One backend (`client-admin-backend`) exposing client and admin APIs.
+- One frontend (`client-admin-web`) with user and admin UIs.
+- One PostgreSQL database shared by all modules.
 
-## Overview
-
-- Single shared PostgreSQL DB with one user table (`users`) storing `role: 'user' | 'admin'`.
-- Backend (`client-admin-backend`) exposes:
-  - Client routes (auth, accounts, transactions)
-  - Admin routes (user listing, more to follow)
-- Frontend (`client-admin-web`) includes:
-  - Normal user pages (dashboard, deposit, withdraw, transactions)
-  - Admin pages (`/admin/dashboard`, `/admin/users`) protected by role
-
-## Monorepo Structure
-
-- `client-admin-backend/` — Express + Sequelize API running on port `3001`
-- `client-admin-web/` — Vite + React app running on port `5173` (proxy to `/api`)
-- Shared DB exposed via Docker on port `5432`
+## Repo Layout
+- `client-admin-backend/` — Express + Sequelize API (default `http://localhost:3001`).
+- `client-admin-web/` — Vite + React SPA (default dev at `http://localhost:5173`).
+- Docker PostgreSQL (default `5432`).
 
 ## Prerequisites
+- Windows or macOS.
+- `Node.js >= 18`, `npm`.
+- Docker Desktop.
+- A terminal (PowerShell on Windows is great).
 
-- Windows (PowerShell) or macOS
-- Node.js 18+
-- Docker Desktop
-- Git (optional)
+## Environment Setup
+- Backend `.env` (use `.env.example` as reference):
+  - `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `NODE_ENV`.
+  - `JWT_SECRET`, `JWT_EXPIRES_IN`, `ADMIN_JWT_SECRET`, `ADMIN_JWT_EXPIRES_IN`.
+  - `PASSWORD_SALT`, `CORS_ORIGIN`.
+  - `ADMIN_DEVICE_ID`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`.
+- Frontend `.env`:
+  - `VITE_CLIENT_API_URL=http://localhost:3001` (for direct API calls; dev proxy can also be used).
 
-## Environment Variables
+## Step‑By‑Step: Getting Started
+1) Start PostgreSQL via Docker
+   - `docker compose up -d`
+2) Install and run the backend
+   - `cd ./credit-jambo-client-admin-saving-MS/client-admin-backend`
+   - `npm install`
+   - On boot: connects to DB, seeds an admin user + verified admin device, and serves on `3001`.
+3) Install and run the frontend
+   - `cd ./credit-jambo-client-admin-saving-MS/client-admin-web`
+   - `npm install`
+   - `npm run dev`
+   - Open `http://localhost:5173` (or whatever Vite chooses, e.g., `5175`).
 
-Set these in `client-admin-backend/.env` (do NOT commit `.env` — use `.env.example` instead):
+## Using the Client‑Admin Web
+- Login as admin using `ADMIN_EMAIL` and `ADMIN_PASSWORD` from backend `.env`.
+- Admins land on `/admin/dashboard` and can:
+  - View users, balances, devices, transactions.
+  - Toggle user access (deny/restore).
+  - Assign devices, verify devices, delete devices.
+  - Delete users (and related devices, account, transactions).
+- Normal users (role `user`) can:
+  - View balance and transaction history.
+  - Deposit and withdraw (subject to device verification policy below).
 
-- Database:
-  - `DB_HOST=<YOUR_DB_HOST>`
-  - `DB_PORT=<YOUR_DB_PORT>`
-  - `DB_NAME=<YOUR_DB_NAME>`
-  - `DB_USER=<YOUR_DB_USER>`
-  - `DB_PASSWORD=<YOUR_DB_PASSWORD>`
-- Security:
-  - `PASSWORD_SALT=<YOUR_PASSWORD_SALT>`
-  - `JWT_SECRET=<YOUR_JWT_SECRET>`
-  - `JWT_EXPIRES_IN=1h` (optional)
-- Admin seeding:
-  - `ADMIN_EMAIL=<ADMIN_EMAIL>`
-  - `ADMIN_PASSWORD=<ADMIN_PASSWORD>`
-  - `ADMIN_DEVICE_ID=<YOUR_DEVICE_ID>`
-- CORS (optional):
-  - `CORS_ORIGIN=http://localhost:5173`
+## Using the Client‑Admin Backend
+- Runs at `http://localhost:3001`.
+- Enforces authentication (`Bearer <token>` header) and admin role where needed.
+- Seeds one admin with a verified device at startup.
+- Logs helpful messages; consistent JSON responses using shared helpers.
 
-Set `client-admin-web/.env` (optional):
-- Vite proxy forwards `/api/*` to `http://localhost:3001` via dev server
-
-## Database
-
-- PostgreSQL container hosts:
-  - `users` (fields include `role`, `isActive`, `password`)
-  - `devices` (per-user device records, must be verified)
-  - `accounts` and `transactions`
-
-To inspect DB (example):
-```bash
-docker exec -it <YOUR_DB_CONTAINER_NAME> psql -U <YOUR_DB_USER> -d <YOUR_DB_NAME> -c "\dt"
-```
-
-## Device Policy
-
-- Admin:
-  - Login with a `deviceId` (e.g., `<YOUR_DEVICE_ID>`)
-  - If missing, backend can auto-create and verify an admin device
-  - Seeder ensures the admin device exists and is verified at startup
+## Device Verification Policy
+- Admins: bypass device checks for login and operations.
 - Normal users:
-  - Must login with an existing, verified device
-  - Registration creates a device and sets `isVerified=false` (verify via ops)
-
-## Setup
-
-1) Start Docker DB (if not already up)
-```bash
-docker compose up -d
-```
-
-2) Install backend deps and run dev server
-```bash
-<<<<<<< HEAD
-cd ./credit-jambo-client-admin-saving-MS/client-admin-backend
-=======
-cd d:\new-credit-jambo\credit-jambo-client-admin-saving-MS\client-admin-backend
->>>>>>> 68c3c78d994b5c4eafe83038466c0c03a23251e2
-npm install
-npm run dev
-```
-
-- On start, it:
-  - Connects to DB
-  - Seeds an admin user and a verified admin device (`ADMIN_DEVICE_ID`)
-  - Logs “Backend running on port 3001”
-
-3) Install client-admin-web deps and run dev server
-```bash
-<<<<<<< HEAD
-cd ./credit-jambo-client-admin-saving-MS/client-admin-web
-=======
-cd d:\new-credit-jambo\credit-jambo-client-admin-saving-MS\client-admin-web
->>>>>>> 68c3c78d994b5c4eafe83038466c0c03a23251e2
-npm install
-npm run dev
-```
-
-- Visit `http://localhost:5173`
-
-## Quickstart Login
-
-- Admin login:
-  - Email: use `ADMIN_EMAIL` from your `.env`
-  - Password: use `ADMIN_PASSWORD` from your `.env`
-  - Device: ensure frontend uses the same `ADMIN_DEVICE_ID` set in `.env`
-    - Example in browser console: `localStorage.setItem('deviceId','<YOUR_DEVICE_ID>')`
-  - After login, admins redirect to `/admin/dashboard`
-
-- Normal user login:
-  - Register via `/register`
-  - Device gets created pending verification; login requires a verified device
+  - Must login with a `deviceId` that is registered to their account.
+  - The device must be verified before login succeeds.
+  - Registration creates a device with `isVerified=false`; an admin needs to verify it.
+  - After verification, users can log in and perform deposit/withdraw.
 
 ## API Endpoints
+- Base URL: `http://localhost:3001`
 
-Base: `http://localhost:3001`
-
-- Health:
+- Health
   - `GET /health` → `{ status: 'OK', timestamp, service }`
 
-- Auth:
+- Auth
   - `POST /api/auth/register`
-    - Body: `{ email, password, firstName, lastName, deviceId }`
+    - Body: `{ email, password, firstName, lastName, deviceId? }`
     - Returns: `{ message, user, device }`
   - `POST /api/auth/login`
-    - Body: `{ email, password, deviceId }`
-    - Returns: `{ token, user, device? }`
-      - Token payload includes `{ userId, deviceId, role }`
-      - Admin logins may auto-create/verify device if missing
+    - Body: `{ email, password, deviceId? }`
+    - Normal users require a registered, verified device; admins bypass.
+    - Returns: `{ token, user }`
   - `GET /api/auth/verify-token`
     - Header: `Authorization: Bearer <token>`
     - Returns: `{ user, device? }`
+  - `POST /api/auth/request-password-reset`
+    - Body: `{ email }`
+    - Returns: generic message and, in non‑prod, a temp password for testing.
 
-- Account (authenticated user):
+- Account (Authenticated as user)
   - `GET /api/account/balance`
   - `GET /api/account/transactions?limit=&offset=`
-  - `POST /api/account/deposit`
-  - `POST /api/account/withdraw`
+  - `POST /api/account/deposit` (requires verified device; admins bypass)
+  - `POST /api/account/withdraw` (requires verified device; admins bypass)
 
-- Admin (role enforced via middleware):
+- Admin (Authenticated as admin)
   - `GET /api/admin/users?limit=&offset=`
   - `GET /api/admin/users/:id`
-  - More admin routes can be added similarly (devices, transactions audit, etc.)
+  - `GET /api/admin/users/:id/details`
+  - `PATCH /api/admin/users/:id/access` (Body: `{ isActive: boolean }`)
+  - `GET /api/admin/accounts`
+  - `GET /api/admin/transactions` (filters: `type`, `status`, `userId`)
+  - `GET /api/admin/devices` (optional `userId` query)
+  - `POST /api/admin/devices/:deviceId/verify`
+  - `DELETE /api/admin/devices/:deviceId`
+  - `POST /api/admin/users/:id/devices` (Body: `{ deviceId?, isVerified? }`)
+  - `DELETE /api/admin/users/:id`
+  - `GET /api/admin/stats`
 
 ## Frontend Routes
-
-- Public: `/`, `/login`, `/register`
-- Protected: `/app`, `/dashboard`, `/deposit`, `/withdraw`, `/transactions`
-- Admin-protected: `/admin/dashboard`, `/admin/users`
-
-Notes:
-- Admin routes use a `RequireAdmin` guard in `client-admin-web`.
-- Post-login, frontend redirects based on `user.role`:
+- Public: `/`, `/login`, `/register`.
+- Auth‑protected: `/app`, `/dashboard`, `/deposit`, `/withdraw`, `/transactions`.
+- Admin‑protected: `/admin/dashboard`, `/admin/users`, `/admin/devices`, `/admin/stats`.
+- Redirects after login:
   - `admin` → `/admin/dashboard`
-  - `user` → `/app`
+  - `user` → main app (`/app` or `/dashboard`).
 
 ## Assumptions
+- One database powers both client and admin features.
+- Admin seeding uses `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_DEVICE_ID` and `PASSWORD_SALT`.
+- CORS permits local dev origins: set `CORS_ORIGIN` accordingly (e.g., `http://localhost:5173`).
+- Frontend can call APIs directly via `VITE_CLIENT_API_URL` or through dev proxy.
 
-- `PASSWORD_SALT` used to seed the admin must match the one in `.env`.
-- Single shared DB across admin and client flows.
-- Device policy enforced for users; admin device can be auto-created/verified.
-- Vite dev server proxies `/api/*` to backend running on `3001`.
-
-## Troubleshooting
-
-- 401 “Invalid credentials”:
-  - Ensure `.env` values are correct and salts match
-- 401 “Device not registered” (normal user):
-  - Register device via app; verify device
-- 401 “Device pending verification”:
-  - Verify device or adjust dev-only overrides
-- DB connection errors:
-  - Ensure Docker is running and ports are available
-  - Check `DB_*` `.env` values
-
-## Testing (PowerShell)
-
-- Health:
-```bash
-Invoke-RestMethod -Uri "http://localhost:3001/health" -Method Get
-```
-
-- Admin login (replace placeholders):
-```bash
-Invoke-RestMethod -Uri "http://localhost:3001/api/auth/login" -Method Post -ContentType "application/json" -Body '{"email":"<ADMIN_EMAIL>","password":"<ADMIN_PASSWORD>","deviceId":"<YOUR_DEVICE_ID>"}'
-```
-
-- Use token for admin users:
-```bash
-$token = (Invoke-RestMethod -Uri "http://localhost:3001/api/auth/login" -Method Post -ContentType "application/json" -Body '{"email":"<ADMIN_EMAIL>","password":"<ADMIN_PASSWORD>","deviceId":"<YOUR_DEVICE_ID>"}').token
-Invoke-RestMethod -Uri "http://localhost:3001/api/admin/users" -Headers @{ Authorization = "Bearer $token" } -Method Get
-```
+## Beginner‑Friendly Testing
+- PowerShell: health check
+  - `Invoke-RestMethod -Uri "http://localhost:3001/health" -Method Get`
+- PowerShell: admin login
+  - `Invoke-RestMethod -Uri "http://localhost:3001/api/auth/login" -Method Post -ContentType "application/json" -Body '{"email":"<ADMIN_EMAIL>","password":"<ADMIN_PASSWORD>"}'`
+- PowerShell: use token
+  - `$token = (Invoke-RestMethod -Uri "http://localhost:3001/api/auth/login" -Method Post -ContentType "application/json" -Body '{"email":"<ADMIN_EMAIL>","password":"<ADMIN_PASSWORD>"}').token`
+  - `Invoke-RestMethod -Uri "http://localhost:3001/api/admin/users" -Headers @{ Authorization = "Bearer $token" } -Method Get`
 
 ## Linting & Formatting
+- Backend
+  - `cd ./credit-jambo-client-admin-saving-MS/client-admin-backend`
+  - `npm run lint`
+- Frontend
+  - `cd ./credit-jambo-client-admin-saving-MS/client-admin-web`
+  - `npm run lint`
 
-- Backend:
-```bash
-<<<<<<< HEAD
-cd ./credit-jambo-client-admin-saving-MS/client-admin-backend
-=======
-cd d:\new-credit-jambo\credit-jambo-client-admin-saving-MS\client-admin-backend
->>>>>>> 68c3c78d994b5c4eafe83038466c0c03a23251e2
-npm run lint
-```
+## Troubleshooting Tips
+- 401 “Invalid credentials”
+  - Check email/password and that admin seed ran.
+- 401 “Device not registered” (normal user)
+  - Ensure you provided `deviceId` that was created for that user.
+- 401 “Device pending verification”
+  - Ask admin to verify the device via Admin UI or `/api/admin/devices/:id/verify`.
+- DB connection errors
+  - Verify Docker is running; validate `DB_*` values in `.env`.
 
-- Frontend:
-```bash
-<<<<<<< HEAD
-cd ./credit-jambo-client-admin-saving-MS/client-admin-web
-=======
-cd d:\new-credit-jambo\credit-jambo-client-admin-saving-MS\client-admin-web
->>>>>>> 68c3c78d994b5c4eafe83038466c0c03a23251e2
-npm run lint
-```
+## Final Notes
+- Keep `.env` secrets safe; never commit them.
+- Use consistent environments (dev vs prod) and update `CORS_ORIGIN` accordingly.
+- We’ve standardized backend responses and frontend helpers to keep the code clean and readable. It should feel modern and welcoming — like a caring sibling guiding you. 
 
-Be kind to your future self: keep `.env` tidy and secrets safe. 🫶
+ 

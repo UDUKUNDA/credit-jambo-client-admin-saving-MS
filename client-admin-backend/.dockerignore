@@ -12,9 +12,7 @@ coverage
 # Environment & configuration
 .env
 # Docker itself
-Dockerfile*
 docker-compose*
-docker-compose.yml
 
 # Git
 .git

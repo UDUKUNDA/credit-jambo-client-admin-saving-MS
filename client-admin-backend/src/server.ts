@@ -4,6 +4,7 @@ import { connectDB } from './db/config';
 import { securityHeaders, authLimiter, apiLimiter } from './middlewares/security';
 import authRoutes from './routes/client/auth';
 import accountRoutes from './routes/client/account';
+import adminRoutes from './routes/admin';
 
 // Import models to register associations
 import './db/models/User';
@@ -17,7 +18,11 @@ const app = express();
 // Security middlewares
 app.use(securityHeaders);
 app.use(cors({
-  origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000', 'http://localhost:3002'],
+  origin: process.env.CORS_ORIGIN?.split(',') || [
+    'http://localhost:3000',
+    'http://localhost:3002',
+    'http://localhost:5173'
+  ],
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -30,6 +35,7 @@ app.use('/api', apiLimiter);
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/account', accountRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

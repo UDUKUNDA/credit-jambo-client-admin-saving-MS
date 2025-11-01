@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import DeviceVerificationBanner from '../components/DeviceVerificationBanner';
 
 /**
  * AppHome: Protected landing hub after login.
@@ -11,38 +12,40 @@ export default function AppHome() {
       title: 'Dashboard',
       text: 'View balance and history',
       to: '/dashboard',
-      color: 'from-jamboGreen to-brand-600',
+      color: 'bg-brand-50',
     },
     {
       title: 'Deposit',
       text: 'Add funds to your account',
       to: '/deposit',
-      color: 'from-brand-600 to-jamboGreen',
+      color: 'bg-brand-50',
     },
     {
       title: 'Withdraw',
       text: 'Take out money confidently',
       to: '/withdraw',
-      color: 'from-jamboBlack to-brand-600',
+      color: 'bg-brand-50',
     },
     {
       title: 'Transactions',
       text: 'See all your activity',
       to: '/transactions',
-      color: 'from-brand-600 to-jamboBlack',
+      color: 'bg-brand-50',
     },
   ];
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-12">
       <div className="mb-6">
-        <h2 className="text-3xl font-bold tracking-tight">
-          Welcome back, dear friend!
+        <h2 className="text-3xl font-bold tracking-tight text-jamboBlack">
+          Welcome back!
         </h2>
-        <p className="text-gray-600">
+        <p className="text-jamboBlack/60">
           Choose your next action. Everything is a smooth ride — like sliding down a rainbow, but greener.
         </p>
       </div>
+
+      <DeviceVerificationBanner />
 
       {/* Animated bento grid */}
       <motion.div
@@ -53,20 +56,20 @@ export default function AppHome() {
       >
         {/* Feature hero spans */}
         <motion.div
-          className="md:col-span-2 p-6 rounded-xl border bg-white relative overflow-hidden"
+          className="md:col-span-2 p-6 rounded-xl border border-brand-500/20 bg-white relative overflow-hidden"
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-brand-50 to-transparent opacity-60" />
+          <div className="absolute inset-0 bg-brand-50 opacity-60" />
           <div className="relative space-y-2">
-            <h3 className="text-xl font-semibold">Your Savings Command Center</h3>
-            <p className="text-gray-600">Quick access to the essentials — it’s all yours.</p>
+            <h3 className="text-xl font-semibold text-jamboBlack">Your Savings Command Center</h3>
+            <p className="text-jamboBlack/60">Quick access to the essentials — it's all yours.</p>
             <div className="flex gap-3 mt-3">
-              <Link to="/dashboard" className="px-4 py-2 bg-brand-600 text-white rounded hover:bg-brand-500 transition">
+              <Link to="/dashboard" className="px-4 py-2 bg-brand-600 text-white rounded hover:bg-brand-700 transition">
                 Dashboard
               </Link>
-              <Link to="/transactions" className="px-4 py-2 border rounded hover:bg-gray-50 transition">
+              <Link to="/transactions" className="px-4 py-2 border border-brand-500/30 rounded hover:bg-brand-50 transition">
                 Transactions
               </Link>
             </div>
@@ -76,17 +79,17 @@ export default function AppHome() {
         {tiles.map((t, i) => (
           <motion.div
             key={t.title}
-            className="p-6 rounded-xl border bg-white relative overflow-hidden"
+            className="p-6 rounded-xl border border-brand-500/20 bg-white relative overflow-hidden"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.05 * (i + 1) }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <div className={`absolute inset-0 bg-gradient-to-br ${t.color} opacity-15 pointer-events-none`} />
+            <div className={`absolute inset-0 ${t.color} opacity-60 pointer-events-none`} />
             <div className="relative">
-              <h4 className="text-lg font-semibold mb-1">{t.title}</h4>
-              <p className="text-gray-600 text-sm mb-3">{t.text}</p>
+              <h4 className="text-lg font-semibold mb-1 text-jamboBlack">{t.title}</h4>
+              <p className="text-jamboBlack/60 text-sm mb-3">{t.text}</p>
               <Link to={t.to} className="inline-flex items-center gap-2 text-brand-600 hover:underline">
                 Go to {t.title}
                 <span aria-hidden>→</span>
