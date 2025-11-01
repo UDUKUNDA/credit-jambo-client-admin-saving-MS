@@ -149,6 +149,5 @@
 ## Final Notes
 - Keep `.env` secrets safe; never commit them.
 - Use consistent environments (dev vs prod) and update `CORS_ORIGIN` accordingly.
-- We’ve standardized backend responses and frontend helpers to keep the code clean and readable. It should feel modern and welcoming — like a caring sibling guiding you. 
-
+ 
  
